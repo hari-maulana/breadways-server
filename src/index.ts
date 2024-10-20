@@ -5,14 +5,14 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { loginRoute, registerRoute } from "./src/routes/authRoutes";
+import { loginRoute, registerRoute } from "./routes/authRoutes";
 import {
   getUserProfileRoute,
   updateUserProfileRoute,
-} from "./src/routes/userRoutes";
-import { bakeries, getProducts } from "./src/controllers/partnerController";
+} from "./routes/userRoutes";
+import { bakeries, getProducts } from "./controllers/partnerController";
 import { get } from "http";
-import { uploadProductImage } from "./src/cloudinary/fileUpload";
+import { uploadProductImage } from "./cloudinary/fileUpload";
 import { create } from "domain";
 import {
   addProductToCart,
@@ -20,7 +20,7 @@ import {
   getCartByUserId,
   getOrdersByUserId,
   placeOrder,
-} from "./src/controllers/productController";
+} from "./controllers/productController";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -85,6 +85,10 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => {
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
+
+app.listen(process.env.PORT || 3000, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });

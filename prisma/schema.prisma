@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // uses connection pooling
+  //directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// User Model with Roles
+model User {
+  id        Int          @id @default(autoincrement())
+  email     String       @unique
+  password  String
+  fullName  String
+  phone     String
+  gender    Gender?
+  role      Role
+  profile   UserProfile?
+  bakery    Bakery? // Only for Admins
+  cart      Cart?
+  orders    Order[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+// UserProfile Model for users
+model UserProfile {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  address     String?
+  location    Json?
+  profilePict String?
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Bakery Model (Managed by Admin users)
+model Bakery {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  address      String
+  location     Json // Store map information as JSON (e.g., coordinates)
+  image        String?
+  products     Product[]
+  adminId      Int           @unique
+  admin        User          @relation(fields: [adminId], references: [id], onDelete: Cascade) // Admin is a User with role 'ADMIN'
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  Order Order[]
+}
+
+model Product {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  bakeryId    Int
+  bakery      Bakery         @relation(fields: [bakeryId], references: [id])
+  carts       CartProduct[]
+  orders      OrderProduct[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// Cart Model (for Users)
+model Cart {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @unique
+  products  CartProduct[]
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+// Pivot table for Cart and Products (many-to-many)
+model CartProduct {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int     @default(1)
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// Order Model
+model Order {
+  id         Int            @id @default(autoincrement())
+  userId     Int
+  bakeryId   Int
+  totalPrice Float
+  status     OrderStatus    @default(PENDING)
+  products   OrderProduct[]
+  user       User           @relation(fields: [userId], references: [id])
+  bakery     Bakery         @relation(fields: [bakeryId], references: [id])
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  Transaction Transaction[]
+}
+
+// Pivot table for Order and Products (many-to-many)
+model OrderProduct {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int     @default(1)
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// Transaction Model for bakery admins
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  bakeryId    Int
+  orderId     Int
+  totalAmount Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bakery      Bakery   @relation(fields: [bakeryId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+}
+
+// Enums
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  DELIVERING
+  COMPLETED
+  CANCELED
+}

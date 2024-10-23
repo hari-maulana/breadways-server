@@ -66,6 +66,7 @@ CREATE TABLE "Product" (
 CREATE TABLE "Cart" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
+    "bakeryId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -88,6 +89,8 @@ CREATE TABLE "Order" (
     "userId" INTEGER NOT NULL,
     "bakeryId" INTEGER NOT NULL,
     "totalPrice" DOUBLE PRECISION NOT NULL,
+    "address" TEXT,
+    "location" JSONB,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

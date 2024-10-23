@@ -2,9 +2,21 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export const bakeries = async (req: Request, res: Response) => {
+export const getAllBakeries = async (req: Request, res: Response) => {
   try {
-    const bakeries = await prisma.bakery.findMany({});
+    const bakeries = await prisma.bakery.findMany({
+      include: {
+        admin: {
+          select: {
+            profile: {
+              select: {
+                profilePict: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     res.status(200).json({ bakeries });
   } catch (error) {
@@ -12,7 +24,7 @@ export const bakeries = async (req: Request, res: Response) => {
   }
 };
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getBakeryProducts = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const products = await prisma.product.findMany({

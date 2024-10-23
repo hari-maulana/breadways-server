@@ -1,18 +1,17 @@
 import express from "express";
+import { uploadProductImage } from "../cloudinary/fileUpload";
 import {
   getUserProfile,
   updateUserProfile,
-} from "../controllers/userControllers";
-import { PrismaClient } from "@prisma/client";
-import { get } from "http";
-import { verifyToken } from "../middlewares/auth";
+} from "../controllers/userController";
 
-const prisma = new PrismaClient();
+const router = express.Router();
 
-const app = express();
+router.get("/profile/:userId", getUserProfile);
+router.put(
+  "/profile/:userId",
+  uploadProductImage.single("image"),
+  updateUserProfile
+);
 
-const getUserProfileRoute = app.get("/:userId", getUserProfile);
-
-const updateUserProfileRoute = app.put("/:userId", updateUserProfile);
-
-export { updateUserProfileRoute, getUserProfileRoute };
+export default router;

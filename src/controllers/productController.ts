@@ -58,17 +58,28 @@ export const addProductToCart = async (
   }
 
   try {
+    // Find the product to get its bakeryId
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { bakery: true }, // Ensure we get the bakery info
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
     // Find the user's cart
     let cart = await prisma.cart.findUnique({
       where: { userId },
       include: { products: true },
     });
 
-    // If no cart is found, create a new one
+    // If no cart exists, create one with the bakeryId from the product
     if (!cart) {
       cart = await prisma.cart.create({
         data: {
           userId,
+          bakeryId: product.bakeryId, // Store the bakeryId in the cart
           products: {
             create: {
               productId,
@@ -76,12 +87,20 @@ export const addProductToCart = async (
             },
           },
         },
-        include: { products: true }, // add this line
+        include: { products: true },
       });
 
       return res
         .status(201)
         .json({ message: "Cart created and product added", cart });
+    }
+
+    // If a cart exists, check if it belongs to the same bakery
+    if (cart.bakeryId !== product.bakeryId) {
+      return res.status(400).json({
+        error:
+          "You can only add products from the same bakery. Please checkout or clear your cart.",
+      });
     }
 
     // Check if the product already exists in the cart
@@ -142,80 +161,4 @@ export const getCartByUserId = async (
   }
 
   res.status(200).json(cart);
-};
-
-// place order and update cart
-
-export const placeOrder = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  const { userId, bakeryId } = req.body;
-
-  // Find the user's cart
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-    include: {
-      products: {
-        include: {
-          product: true,
-        },
-      },
-    },
-  });
-
-  if (!cart || cart.products.length === 0) {
-    return res.status(400).json({ message: "Cart is empty" });
-  }
-
-  // Calculate the total price
-  const totalPrice = cart.products.reduce((acc, cartProduct) => {
-    return acc + cartProduct.quantity * cartProduct.product.price;
-  }, 0);
-
-  // Create a new order
-  const order = await prisma.order.create({
-    data: {
-      userId: userId,
-      bakeryId: bakeryId,
-      totalPrice: totalPrice,
-      status: "PENDING", // Initial status
-      products: {
-        create: cart.products.map((cartProduct) => ({
-          productId: cartProduct.productId,
-          quantity: cartProduct.quantity,
-        })),
-      },
-    },
-  });
-
-  // Clear the cart after placing the order
-  await prisma.cartProduct.deleteMany({
-    where: { cartId: cart.id },
-  });
-
-  res.status(200).json({ message: "Order placed successfully", order });
-};
-
-// get order by user id
-
-export const getOrdersByUserId = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  const { userId } = req.params;
-
-  const orders = await prisma.order.findMany({
-    where: { userId: parseInt(userId) },
-    include: {
-      bakery: true,
-      products: {
-        include: {
-          product: true,
-        },
-      },
-    },
-  });
-
-  res.status(200).json(orders);
 };

@@ -1,26 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import multer from "multer";
-import cloudinary from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { loginRoute, registerRoute } from "./routes/authRoutes";
-import {
-  getUserProfileRoute,
-  updateUserProfileRoute,
-} from "./routes/userRoutes";
-import { bakeries, getProducts } from "./controllers/partnerController";
-import { get } from "http";
-import { uploadProductImage } from "./cloudinary/fileUpload";
-import { create } from "domain";
-import {
-  addProductToCart,
-  createProduct,
-  getCartByUserId,
-  getOrdersByUserId,
-  placeOrder,
-} from "./controllers/productController";
+import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
+import partnerRoutes from "./routes/partnerRoutes";
+import productRoutes from "./routes/productRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -31,44 +17,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ROUTES
-app.use("/auth", registerRoute);
-app.use("/auth", loginRoute);
-// USER ROUTES
-app.use("/user", updateUserProfileRoute);
-app.use("/user", getUserProfileRoute);
-// PARTNER ROUTES
-app.get("/bakeries", bakeries);
-app.get("/bakery/:id/products", getProducts);
-// PRODUCT ROUTES
-app.post(
-  "/admin/bakery/product/:id",
-  uploadProductImage.single("image"),
-  createProduct
-);
-//post product to cart
-app.post("/cart", addProductToCart);
-// Get cart items for the user
-app.get("/cart/:userId", getCartByUserId);
-// Place an order and clear the cart
-app.post("/order", placeOrder);
-// get orders
-app.get("/orders/:userId", getOrdersByUserId);
-
-/** get bakeries */
-app.get("/bakeries", async (req, res) => {
-  try {
-    const bakeries = await prisma.bakery.findMany({
-      include: {
-        products: true,
-      },
-    });
-
-    res.status(200).json({ bakeries });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-/** get user */
+app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/partner", partnerRoutes);
+app.use("/", productRoutes);
+app.use("/", orderRoutes);
 
 app.get("/users", async (req, res) => {
   try {

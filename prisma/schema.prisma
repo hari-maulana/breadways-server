@@ -82,6 +82,7 @@ model Product {
 model Cart {
   id        Int           @id @default(autoincrement())
   userId    Int           @unique
+  bakeryId  Int? // Add bakeryId to track the bakery associated with the products in the cart
   products  CartProduct[]
   user      User          @relation(fields: [userId], references: [id])
   createdAt DateTime      @default(now())
@@ -104,6 +105,8 @@ model Order {
   userId     Int
   bakeryId   Int
   totalPrice Float
+  address    String?
+  location   Json?
   status     OrderStatus    @default(PENDING)
   products   OrderProduct[]
   user       User           @relation(fields: [userId], references: [id])

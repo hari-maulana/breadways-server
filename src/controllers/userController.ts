@@ -9,10 +9,6 @@ const getUserProfile = async (req: express.Request, res: express.Response) => {
   try {
     const profile = await prisma.user.findUnique({
       where: { id: parseInt(userId) },
-      include: {
-        profile: true,
-        bakery: true,
-      },
     });
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
@@ -34,19 +30,16 @@ const updateUserProfile = async (
     if (!req.file) {
       return res.status(400).json({ message: "Image file is required." });
     }
-    const { profilePict, address, fullName, email, phone, location } = req.body;
-    const profile = await prisma.userProfile.update({
-      where: { userId: parseInt(userId) },
+    const { address, fullName, email, phone, location } = req.body;
+    const profile = await prisma.user.update({
+      where: { id: parseInt(userId) },
       data: {
+        fullName,
+        email,
+        phone,
+        location,
         address,
         profilePict: req.file.path,
-        user: {
-          update: {
-            fullName,
-            email,
-            phone,
-          },
-        },
       },
     });
     res.status(200).json(profile);

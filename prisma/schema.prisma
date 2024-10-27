@@ -21,39 +21,25 @@ enum Gender {
 
 // User Model with Roles
 model User {
-  id        Int          @id @default(autoincrement())
-  email     String       @unique
-  password  String
-  fullName  String
-  phone     String
-  gender    Gender?
-  role      Role
-  profile   UserProfile?
-  bakery    Bakery? // Only for Admins
-  cart      Cart?
-  orders    Order[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-}
-
-// UserProfile Model for users
-model UserProfile {
-  id          Int     @id @default(autoincrement())
-  userId      Int     @unique
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  fullName    String
+  phone       String
   address     String?
-  location    Json?
+  location    String?
   profilePict String?
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender      Gender?
+  role        Role
+  bakery      Bakery?
+  cart        Cart?
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-// Bakery Model (Managed by Admin users)
 model Bakery {
   id           Int           @id @default(autoincrement())
-  name         String
-  description  String?
-  address      String
-  location     Json // Store map information as JSON (e.g., coordinates)
-  image        String?
   products     Product[]
   adminId      Int           @unique
   admin        User          @relation(fields: [adminId], references: [id], onDelete: Cascade) // Admin is a User with role 'ADMIN'
@@ -78,7 +64,6 @@ model Product {
   updatedAt   DateTime       @updatedAt
 }
 
-// Cart Model (for Users)
 model Cart {
   id        Int           @id @default(autoincrement())
   userId    Int           @unique

@@ -4,19 +4,7 @@ const prisma = new PrismaClient();
 
 export const getAllBakeries = async (req: Request, res: Response) => {
   try {
-    const bakeries = await prisma.bakery.findMany({
-      include: {
-        admin: {
-          select: {
-            profile: {
-              select: {
-                profilePict: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const bakeries = await prisma.bakery.findMany({});
 
     res.status(200).json({ bakeries });
   } catch (error) {

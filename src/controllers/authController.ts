@@ -29,13 +29,6 @@ const registerUser = async (req: express.Request, res: express.Response) => {
               image: "",
             },
           },
-          profile: {
-            create: {
-              address: "",
-              profilePict: "",
-              location: {},
-            },
-          },
         },
       });
 
@@ -49,13 +42,6 @@ const registerUser = async (req: express.Request, res: express.Response) => {
           gender,
           phone,
           role,
-          profile: {
-            create: {
-              address: "",
-              profilePict: "",
-              location: {},
-            },
-          },
         },
       });
 

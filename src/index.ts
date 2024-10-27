@@ -27,7 +27,6 @@ app.get("/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       include: {
-        profile: true,
         bakery: true,
       },
     });

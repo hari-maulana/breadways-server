@@ -21,13 +21,7 @@ const registerUser = async (req: express.Request, res: express.Response) => {
           phone,
           role,
           bakery: {
-            create: {
-              name: fullName,
-              description: "",
-              address: "",
-              location: {},
-              image: "",
-            },
+            create: {},
           },
         },
       });
@@ -68,12 +62,7 @@ const admRegister = async (req: express.Request, res: express.Response) => {
         phone,
         role,
         bakery: {
-          create: {
-            name: fullName,
-            description: "",
-            address: "",
-            location: {},
-          },
+          create: {},
         },
       },
     });
@@ -109,7 +98,7 @@ const loginUser = async (req: express.Request, res: express.Response) => {
     const role = user.role;
     const userId = user.id;
 
-    res.status(200).json({ userId, role, token: token });
+    res.status(200).json({ user, token: token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

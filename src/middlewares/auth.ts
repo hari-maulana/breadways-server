@@ -1,8 +1,12 @@
 import jwt from "jsonwebtoken";
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
+
+export interface RequestWithUser extends Request {
+  user?: any;
+}
 
 export const verifyToken = async (
-  req: any,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
@@ -18,8 +22,7 @@ export const verifyToken = async (
     }
 
     const verified = jwt.verify(token, process.env.JWT_SECRET!);
-
-    req.userProfile = verified;
+    req.user = verified;
     next();
   } catch (error: any) {
     res.status(500).json({ error: error.message });
